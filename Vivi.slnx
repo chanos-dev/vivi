@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Vivi.Core/Vivi.Core.csproj" />
+    <Project Path="src/Vivi/Vivi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Vivi.Core.Tests/Vivi.Core.Tests.csproj" />
+  </Folder>
+</Solution>

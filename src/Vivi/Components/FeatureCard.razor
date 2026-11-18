@@ -1,0 +1,21 @@
+<a class="feature-card @ToneClass" href="@Href">
+    <span class="title">@Title</span>
+    <span class="description">@Description</span>
+</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Description { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Href { get; set; } = string.Empty;
+
+    /// <summary>현 색상 톤: "g", "d", "a", "e". 지정하지 않으면 흰 카드.</summary>
+    [Parameter]
+    public string? Tone { get; set; }
+
+    private string? ToneClass => Tone is null ? null : $"tone-{Tone}";
+}

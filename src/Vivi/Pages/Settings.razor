@@ -1,0 +1,47 @@
+@page "/settings"
+@inject SettingsService SettingsService
+
+<PageTitle>설정 · Vivi</PageTitle>
+
+<PageHeader Title="설정" />
+
+<section class="setting">
+    <div class="setting-head">
+        <h2>기준음 (A4)</h2>
+        <p class="hint">튜너, 롱톤 판정, 음감 훈련이 이 값을 기준으로 동작합니다.</p>
+    </div>
+
+    <div class="stepper">
+        <button type="button" class="btn" aria-label="1 Hz 낮추기"
+                disabled="@(a4Hz <= ConcertPitch.MinHz)" @onclick="() => SetA4Async(a4Hz - 1)">−</button>
+        <output class="value num" aria-live="polite">@a4Hz.ToString("0.#") <small>Hz</small></output>
+        <button type="button" class="btn" aria-label="1 Hz 높이기"
+                disabled="@(a4Hz >= ConcertPitch.MaxHz)" @onclick="() => SetA4Async(a4Hz + 1)">+</button>
+    </div>
+
+    <div class="presets">
+        @foreach (var preset in Presets)
+        {
+            <button type="button" class="chip @(preset == a4Hz ? "selected" : null)"
+                    @onclick="() => SetA4Async(preset)">@preset</button>
+        }
+    </div>
+</section>
+
+@code {
+    private static readonly double[] Presets = [440, 441, 442, 443];
+
+    private double a4Hz;
+
+    protected override void OnInitialized()
+    {
+        a4Hz = SettingsService.Current.A4Hz;
+    }
+
+    private async Task SetA4Async(double value)
+    {
+        var clamped = Math.Clamp(value, ConcertPitch.MinHz, ConcertPitch.MaxHz);
+        a4Hz = clamped;
+        await SettingsService.UpdateAsync(s => s with { A4Hz = clamped });
+    }
+}

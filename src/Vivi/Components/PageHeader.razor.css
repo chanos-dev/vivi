@@ -1,0 +1,14 @@
+.page-header {
+    margin-bottom: var(--space-5);
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    outline: none;
+}
+
+.subtitle {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+}

@@ -1,0 +1,36 @@
+.home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+}
+
+.home-header h1 {
+    margin: 0;
+    outline: none;
+}
+
+.pitch-badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.feature-group {
+    margin-bottom: var(--space-6);
+}
+
+h2 {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-muted);
+    font-size: 1rem;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-3);
+}

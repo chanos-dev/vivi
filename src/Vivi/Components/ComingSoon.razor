@@ -1,0 +1,12 @@
+<section class="coming-soon">
+    <p class="badge">로드맵 @(Phase)단계</p>
+    <p>@Description</p>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public int Phase { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Description { get; set; } = string.Empty;
+}

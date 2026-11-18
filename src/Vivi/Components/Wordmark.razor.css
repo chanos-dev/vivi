@@ -1,0 +1,11 @@
+.wordmark {
+    font-family: var(--font-latin);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.01em;
+}
+
+.g { color: var(--string-g); }
+.d { color: var(--string-d); }
+.a { color: var(--string-a); }
+.e { color: var(--string-e); }

@@ -1,0 +1,23 @@
+<nav class="tabbar" aria-label="주요 메뉴">
+    @foreach (var tab in Tabs)
+    {
+        <NavLink class="tab" href="@tab.Href" Match="@tab.Match">
+            <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="@tab.IconPath" />
+            </svg>
+            <span class="tab-label">@tab.Label</span>
+        </NavLink>
+    }
+</nav>
+
+@code {
+    private sealed record Tab(string Label, string Href, NavLinkMatch Match, string IconPath);
+
+    private static readonly Tab[] Tabs =
+    [
+        new("홈", Routes.Home, NavLinkMatch.All, "M3 11 12 4l9 7v9h-6v-6H9v6H3z"),
+        new("튜너", Routes.Tuner, NavLinkMatch.Prefix, "M4 17a8 8 0 0 1 16 0M12 17l4-5"),
+        new("메트로놈", Routes.Metronome, NavLinkMatch.Prefix, "M9 3h6l4 18H5zM12 17l5-9"),
+        new("설정", Routes.Settings, NavLinkMatch.Prefix, "M4 7h10M18 7h2M16 5v4M4 17h2M10 17h10M8 15v4"),
+    ];
+}

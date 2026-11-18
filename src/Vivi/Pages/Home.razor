@@ -1,0 +1,28 @@
+@page "/"
+@inject SettingsService SettingsService
+
+<PageTitle>Vivi</PageTitle>
+
+<header class="home-header">
+    <h1><Wordmark Size="40" /></h1>
+    <span class="pitch-badge num">A4 @SettingsService.Current.A4Hz.ToString("0.#") Hz</span>
+</header>
+
+<section class="feature-group">
+    <h2>지판 · 악보</h2>
+    <div class="feature-grid">
+        <FeatureCard Title="지판 지도" Description="포지션별 음 위치 보기" Href="@Routes.Fingerboard" Tone="g" />
+        <FeatureCard Title="음 읽기 퀴즈" Description="오선보의 음 이름 맞히기" Href="@Routes.NoteReadingQuiz" Tone="d" />
+        <FeatureCard Title="운지 퀴즈" Description="현 · 포지션 · 손가락 번호 맞히기" Href="@Routes.FingeringQuiz" Tone="a" />
+    </div>
+</section>
+
+<section class="feature-group">
+    <h2>음정 · 리듬</h2>
+    <div class="feature-grid">
+        <FeatureCard Title="튜너" Description="실시간 음 높이와 센트 편차" Href="@Routes.Tuner" Tone="e" />
+        <FeatureCard Title="롱톤 판정" Description="목표 음을 3초간 정확히 유지하기" Href="@Routes.BowCheck" Tone="a" />
+        <FeatureCard Title="메트로놈" Description="BPM · 박자 설정" Href="@Routes.Metronome" Tone="g" />
+        <FeatureCard Title="음감 훈련" Description="들려주는 음 · 음정 맞히기" Href="@Routes.EarTraining" Tone="d" />
+    </div>
+</section>

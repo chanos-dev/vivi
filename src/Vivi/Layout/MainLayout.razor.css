@@ -1,0 +1,17 @@
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.app-main {
+    flex: 1;
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding:
+        calc(env(safe-area-inset-top) + var(--space-4))
+        calc(env(safe-area-inset-right) + var(--space-4))
+        calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--space-4))
+        calc(env(safe-area-inset-left) + var(--space-4));
+}
