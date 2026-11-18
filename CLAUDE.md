@@ -29,6 +29,11 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
 ## 컨벤션
 
 - MS Blazor 템플릿 구조를 따른다: 페이지는 `Pages/`, 레이아웃은 `Layout/`, 공용 컴포넌트는 `Components/`.
+- **enum 이름은 `E` 접두사를 붙인다.**
+  - 예: `EViolinString`, `ENoteLetter`, `EAccidental`.
+  - 파일 이름도 같게 한다(`EViolinString.cs`).
+  - 그 enum의 확장 메서드 클래스는 `E…Extensions`(예: `EViolinStringExtensions`)로 같은 파일에 둔다.
+  - 속성 이름에는 접두사를 붙이지 않는다(예: `Pitch.Accidental`의 타입은 `EAccidental`).
 - 링크 `href`에는 `Routes` 상수를 쓴다. 상대 경로여야 GitHub Pages의 `/vivi/` 하위 경로에서 동작한다. 앞에 `/`를 붙이지 않는다.
 - 의존성 주입은 `@inject`를 쓴다. 페이지 클래스 이름과 겹치지 않게 서비스 이름 그대로 주입한다(예: `@inject SettingsService SettingsService`).
 - 테스트 가능한 로직(음 계산, 판정, 퀴즈 생성)은 `Vivi.Core`에 둔다. 앱 프로젝트는 UI와 interop만 담당한다.
@@ -36,6 +41,18 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
 - JS interop:
   - 컴포넌트 전용 JS는 collocated 모듈(`Foo.razor.js`)로 둔다.
   - 고빈도 오디오 처리(음 높이 검출, 메트로놈 스케줄링)는 JS의 Web Audio/AudioWorklet에서 처리한다. C#에는 결과값만 넘긴다.
+
+## 음악 도메인 규칙 (`Vivi.Core/Music`)
+
+- **음 표기:** `Pitch`는 표기된 음(글자 + 임시표 + 옥타브)이다. C4 = MIDI 60, A4 = 69. C♯4와 D♭4는 다른 값이고 `IsEnharmonicWith`로 같은 소리인지 비교한다. 화면에는 C D E와 ♯/♭로 표기한다.
+- **주파수:** 평균율이고 기준음은 `ConcertPitch`(A4, 기본 440 Hz, 사용자 설정)에서 온다. 음정 판정은 Hz가 아니라 센트(`CentsFrom`)로 한다.
+- **현:** `EViolinString` G3, D4, A4, E5.
+- **포지션:** `Position` 0 = 반 포지션, 1~10.
+- **운지 규칙(`Fingerboard`):**
+  - 1포지션 이상에서 p포지션 f번 손가락은 개방현에서 (p−1)+f 글자 위의 음을 짚는다. ♯·♭은 같은 손가락을 높게·낮게 짚는 것으로 본다.
+  - 반 포지션은 반음 거리로 판정한다. 손가락별로 +1 / +2~3 / +4 / +5~6 반음이다.
+  - 개방현은 `Finger` 0, `Position` null이다.
+  - 운지 퀴즈는 `GetFingerings`가 돌려주는 어느 운지든 정답이다.
 
 ## 디자인 / 스타일 컨벤션
 
