@@ -35,6 +35,7 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
   - 그 enum의 확장 메서드 클래스는 `E…Extensions`(예: `EViolinStringExtensions`)로 같은 파일에 둔다.
   - 속성 이름에는 접두사를 붙이지 않는다(예: `Pitch.Accidental`의 타입은 `EAccidental`).
 - 링크 `href`에는 `Routes` 상수를 쓴다. 상대 경로여야 GitHub Pages의 `/vivi/` 하위 경로에서 동작한다. 앞에 `/`를 붙이지 않는다.
+- 페이지 컴포넌트 이름이 도메인 타입과 겹치면 안 된다(예: 지판 지도 페이지는 `FingerboardMap`. 도메인의 `Fingerboard`와 구분).
 - 의존성 주입은 `@inject`를 쓴다. 페이지 클래스 이름과 겹치지 않게 서비스 이름 그대로 주입한다(예: `@inject SettingsService SettingsService`).
 - 테스트 가능한 로직(음 계산, 판정, 퀴즈 생성)은 `Vivi.Core`에 둔다. 앱 프로젝트는 UI와 interop만 담당한다.
 - 패키지 버전은 `Directory.Packages.props`(Central Package Management)에서만 관리한다.
@@ -46,11 +47,11 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
 
 - **음 표기:** `Pitch`는 표기된 음(글자 + 임시표 + 옥타브)이다. C4 = MIDI 60, A4 = 69. C♯4와 D♭4는 다른 값이고 `IsEnharmonicWith`로 같은 소리인지 비교한다. 화면에는 C D E와 ♯/♭로 표기한다.
 - **주파수:** 평균율이고 기준음은 `ConcertPitch`(A4, 기본 440 Hz, 사용자 설정)에서 온다. 음정 판정은 Hz가 아니라 센트(`CentsFrom`)로 한다.
-- **현:** `EViolinString` G3, D4, A4, E5.
-- **포지션:** `Position` 0 = 반 포지션, 1~10.
+- **현:** `EViolinString` G3, D4, A4, E5. 화면 문구(“A현”, “3포지션”, “D현 · 3포지션 · 4번”)는 `Vivi.Display.MusicText`에서 만든다.
+- **포지션:** `Position` 1~10. 반 포지션은 다루지 않는다(1포지션의 낮게 짚는 자리로 표현된다).
 - **운지 규칙(`Fingerboard`):**
   - 1포지션 이상에서 p포지션 f번 손가락은 개방현에서 (p−1)+f 글자 위의 음을 짚는다. ♯·♭은 같은 손가락을 높게·낮게 짚는 것으로 본다.
-  - 반 포지션은 반음 거리로 판정한다. 손가락별로 +1 / +2~3 / +4 / +5~6 반음이다.
+  - 개방현 글자에 ♯이 붙은 음(A현의 A♯)은 예외로 1포지션 낮은 1번이다.
   - 개방현은 `Finger` 0, `Position` null이다.
   - 운지 퀴즈는 `GetFingerings`가 돌려주는 어느 운지든 정답이다.
 
@@ -91,6 +92,7 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
   - `--font-heading` = Jua: 제목, 버튼, 카드 제목. 단일 굵기라 `font-weight`를 지정하지 않는다.
   - `--font-body` = 고운돋움: 본문과 설명.
   - `--font-latin` = Fredoka: 워드마크, 음 이름(A4), Hz, 센트, 손가락 번호, 레벨, 통계 숫자. `.num` 클래스를 쓴다.
+  - Fredoka에는 ♯/♭ 글자가 없다. 음 이름은 문자열로 출력하지 말고 `<PitchLabel />`(임시표는 `<AccidentalMark />` SVG)로 그린다.
   - 폰트는 Google Fonts로 불러오고, 서비스 워커가 런타임에 캐시한다.
 - **워드마크:** `<Wordmark />` 컴포넌트를 쓴다. Fredoka Bold 소문자 `vivi`이고, 글자마다 G·D·A·E 색을 순서대로 입힌다. 텍스트로 쓸 때도 항상 소문자 `vivi`로 쓴다.
 - **앱 아이콘:** Cream 바탕에 G현 보라 둥근 `v`(Fredoka Bold, 패스로 변환)와 A현 주황 마침표. 원본, 대안, 생성 방법은 `docs/brand/`에 있다.
@@ -101,7 +103,11 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
   - 그라데이션과 이모지는 쓰지 않는다. 별·체크 같은 아이콘은 인라인 SVG(선 굵기 2.4, 둥근 끝)로 그린다.
 - **게임 요소:** 레벨, 별, 연속 연습일 같은 성취 표현을 적극적으로 쓴다. 다만 숫자는 과장 없이 실제 기록만 보여준다.
 - **테마:** Cream 라이트 단일 테마다. 기기가 다크 모드여도 따라가지 않는다(`color-scheme: light`). `prefers-color-scheme: dark` 스타일을 추가하지 않는다.
-- **사용성:** 터치 영역은 최소 44px, 주요 동작은 56px. 텍스트 대비는 4.5:1 이상.
+- **사용성:**
+  - 터치 영역은 최소 44px, 주요 동작은 56px. 텍스트 대비는 4.5:1 이상.
+  - 가장 좁은 화면(320px)에서도 확인한다.
+  - 한글은 단어 단위로 줄바꿈한다(전역 `word-break: keep-all`).
+  - 가로 스크롤 영역에는 넘길 수 있는 방향을 알려주는 표시(화살표)를 둔다. 예: `PositionPicker`.
 
 ## PWA / 브라우저 주의점
 

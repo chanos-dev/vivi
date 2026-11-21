@@ -1,0 +1,12 @@
+.pitch-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.octave {
+    margin-left: 0.05em;
+    font-size: 0.55em;
+    font-weight: 500;
+    opacity: 0.7;
+    vertical-align: baseline;
+}

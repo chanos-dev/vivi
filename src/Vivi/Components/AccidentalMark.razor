@@ -1,0 +1,14 @@
+@* ♯/♭ 기호. Fredoka에 해당 글리프가 없어 기기마다 다른 서체로 대체되므로 SVG로 직접 그린다. *@
+@if (Accidental == EAccidental.Sharp)
+{
+    <svg class="accidental" viewBox="0 0 10 16" aria-hidden="true"><path d="M3.6 1.5V15M6.6 1V14.5M1.2 6.4 8.8 4.6M1.2 11.4 8.8 9.6" /></svg><span class="sr-only">♯</span>
+}
+else if (Accidental == EAccidental.Flat)
+{
+    <svg class="accidental flat" viewBox="0 0 9 16" aria-hidden="true"><path d="M2 0.8V15C5.5 13 8 10.8 7.4 8.8 6.9 7 4.2 7.4 2 9.4" /></svg><span class="sr-only">♭</span>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public EAccidental Accidental { get; set; }
+}

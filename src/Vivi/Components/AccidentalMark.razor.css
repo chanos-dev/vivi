@@ -1,0 +1,17 @@
+.accidental {
+    display: inline-block;
+    width: 0.42em;
+    height: 0.72em;
+    margin: 0 0.02em 0 0.04em;
+    vertical-align: 0.08em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.accidental.flat {
+    width: 0.38em;
+    stroke-width: 1.6;
+}

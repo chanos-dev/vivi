@@ -4,36 +4,22 @@ namespace Vivi.Core.Music;
 /// 바이올린 지판의 음과 운지 관계를 계산한다.
 /// </summary>
 /// <remarks>
-/// <para>
-/// 1포지션 이상에서는 표준 규칙을 따른다. p포지션의 f번 손가락은 개방현에서 (p − 1) + f 글자 위의 음을 짚는다.
+/// p포지션의 f번 손가락은 개방현에서 (p − 1) + f 글자 위의 음을 짚는다.
 /// 예를 들어 A현 1포지션 1번은 B, 3포지션 1번은 D다. ♯과 ♭은 같은 손가락을 높게·낮게 짚는 것(high/low)으로 본다.
-/// </para>
-/// <para>
-/// 반 포지션은 손 전체를 1포지션보다 반음 낮게 두는 자리라 글자가 아닌 반음 거리로 판정한다.
-/// 개방현에서 1번 +1, 2번 +2~3, 3번 +4, 4번 +5~6 반음이다(A현: B♭ / B·C / C♯ / D·E♭).
-/// </para>
+/// 개방현 글자에 ♯이 붙은 음(A현의 A♯)은 예외로 1포지션 1번(낮은 1번)으로 짚는다.
 /// </remarks>
 public static class Fingerboard
 {
     public const int FingerCount = 4;
 
-    private static readonly (int Low, int High)[] HalfPositionSemitones =
-    [
-        (1, 1), // 1번
-        (2, 3), // 2번
-        (4, 4), // 3번
-        (5, 6), // 4번
-    ];
-
     /// <summary>
     /// 표기된 음을 낼 수 있는 모든 운지. 운지 퀴즈에서는 이 중 어느 것이든 정답이다.
     /// </summary>
-    public static IReadOnlyList<Fingering> GetFingerings(Pitch pitch) => GetFingerings(pitch, Position.Half, Position.MaxNumber);
-
     /// <param name="pitch">표기된 음.</param>
-    /// <param name="minPosition">포함할 가장 낮은 포지션. <see cref="Position.Half"/>이면 반 포지션을 포함한다.</param>
+    /// <param name="minPosition">포함할 가장 낮은 포지션 번호.</param>
     /// <param name="maxPosition">포함할 가장 높은 포지션 번호.</param>
-    public static IReadOnlyList<Fingering> GetFingerings(Pitch pitch, Position minPosition, int maxPosition)
+    public static IReadOnlyList<Fingering> GetFingerings(
+        Pitch pitch, int minPosition = Position.MinNumber, int maxPosition = Position.MaxNumber)
     {
         var result = new List<Fingering>();
         foreach (var violinString in EViolinStringExtensions.All)
@@ -53,23 +39,16 @@ public static class Fingerboard
                 continue;
             }
 
-            if (minPosition.IsHalf)
+            if (letterSteps == 0 && semitones == 1 && minPosition <= 1 && maxPosition >= 1)
             {
-                for (var finger = 1; finger <= FingerCount; finger++)
-                {
-                    var (low, high) = HalfPositionSemitones[finger - 1];
-                    if (semitones >= low && semitones <= high)
-                    {
-                        result.Add(new Fingering(violinString, Position.Half, finger));
-                    }
-                }
+                result.Add(new Fingering(violinString, Position.First, 1));
             }
 
-            var lowest = Math.Max(1, minPosition.Number);
             for (var finger = 1; finger <= FingerCount; finger++)
             {
                 var positionNumber = letterSteps - finger + 1;
-                if (positionNumber >= lowest && positionNumber <= maxPosition)
+                if (positionNumber >= Math.Max(minPosition, Position.MinNumber) &&
+                    positionNumber <= Math.Min(maxPosition, Position.MaxNumber))
                 {
                     result.Add(new Fingering(violinString, new Position(positionNumber), finger));
                 }
@@ -83,8 +62,7 @@ public static class Fingerboard
     public static bool CanPlay(Fingering fingering, Pitch pitch) => GetFingerings(pitch).Contains(fingering);
 
     /// <summary>
-    /// 지판 지도용: 한 현·한 포지션에서 각 손가락(1~4)이 짚을 수 있는 음들. 낮은 음부터 정렬된다.
-    /// 1포지션 이상은 기본 글자의 ♭·내추럴·♯, 반 포지션은 ♯·♭ 두 표기를 모두 담는다.
+    /// 한 현·한 포지션에서 각 손가락(1~4)이 짚을 수 있는 음들: 기본 글자의 ♭·내추럴·♯. 낮은 음부터 정렬된다.
     /// </summary>
     public static IReadOnlyList<IReadOnlyList<Pitch>> GetFingerPitches(EViolinString violinString, Position position)
     {
@@ -93,29 +71,53 @@ public static class Fingerboard
 
         for (var finger = 1; finger <= FingerCount; finger++)
         {
-            var pitches = new SortedSet<Pitch>();
-            if (position.IsHalf)
-            {
-                var (low, high) = HalfPositionSemitones[finger - 1];
-                for (var s = low; s <= high; s++)
-                {
-                    pitches.Add(Pitch.FromMidi(open.Midi + s));
-                    pitches.Add(Pitch.FromMidi(open.Midi + s, preferFlat: true));
-                }
-            }
-            else
-            {
-                var diatonic = open.DiatonicIndex + position.Number - 1 + finger;
-                var letter = (ENoteLetter)(diatonic % 7);
-                var octave = diatonic / 7;
-                pitches.Add(new Pitch(letter, EAccidental.Flat, octave));
-                pitches.Add(new Pitch(letter, EAccidental.Natural, octave));
-                pitches.Add(new Pitch(letter, EAccidental.Sharp, octave));
-            }
-
-            fingers.Add(pitches.ToArray());
+            var diatonic = open.DiatonicIndex + position.Number - 1 + finger;
+            var letter = (ENoteLetter)(diatonic % 7);
+            var octave = diatonic / 7;
+            fingers.Add(
+            [
+                new Pitch(letter, EAccidental.Flat, octave),
+                new Pitch(letter, EAccidental.Natural, octave),
+                new Pitch(letter, EAccidental.Sharp, octave),
+            ]);
         }
 
         return fingers;
+    }
+
+    /// <summary>
+    /// 넥 그림용: 한 현·한 포지션에서 손가락들이 짚는 자리(기본·낮게·높게). 반음 거리 → 손가락 순으로 정렬된다.
+    /// </summary>
+    /// <remarks>
+    /// E♯·B♯·C♭·F♭처럼 드문 표기는 같은 소리의 흔한 표기(F·C·B·E)로 바꿔 쓴다.
+    /// 다만 그 자리에 이미 다른 손가락이 있거나 개방현 자리면 넣지 않는다.
+    /// </remarks>
+    public static IReadOnlyList<FingerPlacement> GetPlacements(EViolinString violinString, Position position)
+    {
+        var openMidi = violinString.OpenPitch().Midi;
+        var fingers = GetFingerPitches(violinString, position);
+        var result = new List<FingerPlacement>();
+        var rare = new List<FingerPlacement>();
+
+        for (var finger = 1; finger <= FingerCount; finger++)
+        {
+            foreach (var pitch in fingers[finger - 1])
+            {
+                var reach = (EFingerReach)(int)pitch.Accidental;
+                var placement = new FingerPlacement(violinString, finger, pitch, pitch.Midi - openMidi, reach);
+                (pitch.IsCommonSpelling ? result : rare).Add(placement);
+            }
+        }
+
+        foreach (var placement in rare)
+        {
+            if (placement.Semitones > 0 && result.All(p => p.Semitones != placement.Semitones))
+            {
+                var respelled = Pitch.FromMidi(placement.Pitch.Midi, preferFlat: placement.Reach == EFingerReach.Low);
+                result.Add(placement with { Pitch = respelled });
+            }
+        }
+
+        return result.OrderBy(p => p.Semitones).ThenBy(p => p.Finger).ToArray();
     }
 }

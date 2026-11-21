@@ -1,0 +1,90 @@
+@page "/fingerboard"
+@inject SettingsService SettingsService
+
+<PageTitle>지판 지도 · Vivi</PageTitle>
+
+<PageHeader Title="지판 지도" Subtitle="포지션을 고르고 손가락 자리를 눌러 보세요" />
+
+<PositionPicker Value="position" ValueChanged="OnPositionChanged" />
+
+<div class="toolbar">
+    <div class="segmented" role="radiogroup" aria-label="점 표시">
+        <button type="button" role="radio" aria-checked="@(showNames ? "false" : "true")"
+                class="chip @(showNames ? null : "selected")" @onclick="() => showNames = false">번호</button>
+        <button type="button" role="radio" aria-checked="@(showNames ? "true" : "false")"
+                class="chip @(showNames ? "selected" : null)" @onclick="() => showNames = true">음 이름</button>
+    </div>
+    <span class="legend"><span class="legend-dot" aria-hidden="true"></span>낮게·높게 짚는 자리</span>
+</div>
+
+<ViolinNeck Markers="markers" ShowNames="showNames" Selected="selected" SelectedChanged="OnMarkerSelected" />
+
+@if (selected is { } marker && selectedEntry is { } entry)
+{
+    var fingering = new Fingering(entry.String, position, entry.Finger);
+    var concertPitch = SettingsService.Current.ConcertPitch;
+
+    <section class="detail" aria-live="polite">
+        <div class="detail-head">
+            <span class="detail-pitch"><PitchLabel Pitch="entry.Pitch" /></span>
+            <div class="detail-meta">
+                <span class="badge @MusicText.ToneKey(entry.String)">@MusicText.FingeringText(fingering)@VariantSuffix(entry)</span>
+                <span class="hz num">@concertPitch.FrequencyOf(entry.Pitch).ToString("0.0") Hz <small>(A4 = @concertPitch.A4Hz.ToString("0.#") Hz)</small></span>
+            </div>
+        </div>
+
+        @if (marker.Entries.Count > 1)
+        {
+            <div class="entry-picker" role="radiogroup" aria-label="이 자리를 짚는 운지">
+                @foreach (var option in marker.Entries)
+                {
+                    var o = option;
+                    <button type="button" role="radio" aria-checked="@(o == entry ? "true" : "false")"
+                            class="chip @(o == entry ? "selected" : null)" @onclick="() => selectedEntry = o">
+                        <PitchLabel Pitch="o.Pitch" /> · @MusicText.FingerName(o.Finger)@VariantSuffix(o)
+                    </button>
+                }
+            </div>
+        }
+    </section>
+}
+else
+{
+    <p class="hint">손가락 자리를 누르면 음 이름과 주파수를 보여드려요.</p>
+}
+
+@code {
+    private Position position = Position.First;
+    private IReadOnlyList<NeckMarker> markers = [];
+    private bool showNames;
+    private NeckMarker? selected;
+    private FingerPlacement? selectedEntry;
+
+    protected override void OnInitialized() => markers = NeckMarker.Build(position);
+
+    private void OnPositionChanged(Position value)
+    {
+        position = value;
+        markers = NeckMarker.Build(position);
+
+        // 같은 현·같은 손가락 번호의 기본 자리로 선택을 옮긴다.
+        if (selectedEntry is { } entry)
+        {
+            selected = markers.FirstOrDefault(m => m.String == entry.String && m.IsPrimary && m.Lead.Finger == entry.Finger);
+            selectedEntry = selected?.Lead;
+        }
+    }
+
+    private void OnMarkerSelected(NeckMarker marker)
+    {
+        selected = marker;
+        selectedEntry = marker.Lead;
+    }
+
+    private static string VariantSuffix(FingerPlacement placement) => placement.Reach switch
+    {
+        EFingerReach.High => " (높게)",
+        EFingerReach.Low => " (낮게)",
+        _ => string.Empty,
+    };
+}

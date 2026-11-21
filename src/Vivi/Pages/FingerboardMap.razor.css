@@ -1,0 +1,94 @@
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: var(--space-3) 0 var(--space-4);
+}
+
+.segmented {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--color-text-muted);
+    border-radius: 50%;
+}
+
+.hint {
+    margin-top: var(--space-5);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.detail {
+    margin-top: var(--space-5);
+    padding: var(--space-4);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.detail-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+}
+
+.detail-pitch {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.detail-meta {
+    display: flex;
+    flex: 1 1 180px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-lg);
+    word-break: keep-all; /* 한글을 글자가 아닌 단어 단위로 줄바꿈 */
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+}
+
+.hz {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.hz small {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.entry-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.badge.g { background: var(--string-g); color: var(--string-g-on); }
+.badge.d { background: var(--string-d); color: var(--string-d-on); }
+.badge.a { background: var(--string-a); color: var(--string-a-on); }
+.badge.e { background: var(--string-e); color: var(--string-e-on); }

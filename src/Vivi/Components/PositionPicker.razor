@@ -1,0 +1,87 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="picker" @ref="root">
+    <button type="button" class="arrow arrow-left" aria-label="낮은 포지션 더 보기" tabindex="-1"
+            @onclick="() => ScrollAsync(-1)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+    </button>
+
+    <div class="scroller" role="radiogroup" aria-label="포지션 선택">
+        @foreach (var position in Position.All)
+        {
+            var selected = position == Value;
+            <button type="button" role="radio" aria-checked="@(selected ? "true" : "false")"
+                    aria-label="@MusicText.PositionName(position)"
+                    class="chip @(selected ? "selected" : null)"
+                    @onclick="() => SelectAsync(position)">
+                @position
+            </button>
+        }
+    </div>
+
+    <button type="button" class="arrow arrow-right" aria-label="높은 포지션 더 보기" tabindex="-1"
+            @onclick="() => ScrollAsync(1)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+    </button>
+</div>
+
+@code {
+    private ElementReference root;
+    private IJSObjectReference? module;
+    private IJSObjectReference? handle;
+    private Position revealed;
+
+    [Parameter]
+    public Position Value { get; set; } = Position.First;
+
+    [Parameter]
+    public EventCallback<Position> ValueChanged { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/PositionPicker.razor.js");
+            handle = await module.InvokeAsync<IJSObjectReference>("init", root);
+            revealed = Value;
+            await handle.InvokeVoidAsync("reveal", false);
+        }
+        else if (handle is not null && revealed != Value)
+        {
+            revealed = Value;
+            await handle.InvokeVoidAsync("reveal", true);
+        }
+    }
+
+    private Task SelectAsync(Position position) =>
+        position == Value ? Task.CompletedTask : ValueChanged.InvokeAsync(position);
+
+    private async Task ScrollAsync(int direction)
+    {
+        if (handle is not null)
+        {
+            await handle.InvokeVoidAsync("page", direction);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (handle is not null)
+            {
+                await handle.InvokeVoidAsync("dispose");
+                await handle.DisposeAsync();
+            }
+
+            if (module is not null)
+            {
+                await module.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+}

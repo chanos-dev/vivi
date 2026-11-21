@@ -1,0 +1,11 @@
+@* 음 이름 표기: 글자 + 임시표(SVG), 옥타브는 작게 *@
+<span class="pitch-label num">@Pitch.Letter<AccidentalMark Accidental="Pitch.Accidental" />@if (ShowOctave)
+{<sub class="octave">@Pitch.Octave</sub>}</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public Pitch Pitch { get; set; }
+
+    [Parameter]
+    public bool ShowOctave { get; set; } = true;
+}

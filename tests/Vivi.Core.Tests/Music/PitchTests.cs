@@ -60,4 +60,17 @@ public class PitchTests
     {
         Assert.Equal(expected, Pitch.FromMidi(midi, preferFlat).ToString());
     }
+
+    [Theory]
+    [InlineData("C#5", true)]
+    [InlineData("Bb4", true)]
+    [InlineData("E5", true)]
+    [InlineData("E#5", false)]
+    [InlineData("B#4", false)]
+    [InlineData("Fb5", false)]
+    [InlineData("Cb5", false)]
+    public void IsCommonSpelling_ExcludesRareEnharmonics(string text, bool expected)
+    {
+        Assert.Equal(expected, Pitch.Parse(text).IsCommonSpelling);
+    }
 }

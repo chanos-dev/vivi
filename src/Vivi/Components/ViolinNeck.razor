@@ -1,0 +1,120 @@
+@* 바이올린 넥: 너트가 위, 현은 왼쪽부터 G·D·A·E. 음 간격은 실제 현 길이 비율(2^(-n/12))을 따른다. *@
+
+<div class="neck-area">
+    <div class="neck-column">
+        <div class="string-heads" aria-hidden="true">
+            @foreach (var violinString in EViolinStringExtensions.All)
+            {
+                <span class="string-head @MusicText.ToneKey(violinString)" style="left: @Pct(StringX(violinString, windowStart))">@violinString</span>
+            }
+        </div>
+
+        <div class="neck" style="height: @(Px(NeckHeight))">
+            <svg class="neck-svg" viewBox="0 0 100 @NeckHeight" preserveAspectRatio="none" aria-hidden="true">
+                <polygon class="board" points="@BoardPoints()" />
+                @if (windowStart <= 0)
+                {
+                    <rect class="nut" x="@(Num(50 - HalfWidth(0) - 1))" y="0" width="@(Num(HalfWidth(0) * 2 + 2))" height="6" />
+                }
+                @foreach (var violinString in EViolinStringExtensions.All)
+                {
+                    <line class="string" x1="@(Num(StringX(violinString, windowStart)))" y1="0"
+                          x2="@(Num(StringX(violinString, windowEnd)))" y2="@NeckHeight" />
+                }
+            </svg>
+
+            @foreach (var marker in Markers)
+            {
+                var m = marker;
+                var isSelected = Selected is { } sel && sel.String == m.String && sel.Semitones == m.Semitones;
+                var y = Y(m.Semitones);
+                <button type="button"
+                        class="marker @(m.IsPrimary ? "primary" : "variant") @MusicText.ToneKey(m.String) @(isSelected ? "selected" : null)"
+                        style="left: @Pct(StringX(m.String, m.Semitones)); top: @Px(y)"
+                        aria-pressed="@(isSelected ? "true" : "false")"
+                        aria-label="@MarkerLabel(m)"
+                        @onclick="() => SelectedChanged.InvokeAsync(m)">
+                    <span class="dot">
+                        @if (m.IsPrimary)
+                        {
+                            @if (ShowNames)
+                            {
+                                <PitchLabel Pitch="m.Lead.Pitch" ShowOctave="false" />
+                            }
+                            else
+                            {
+                                <span class="num">@m.Lead.Finger</span>
+                            }
+                        }
+                    </span>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>넥 그림 영역의 높이(px).</summary>
+    private const int NeckHeight = 520;
+
+    /// <summary>지판 끝(브리지 쪽)까지의 반음 수.</summary>
+    private const double FingerboardEnd = 26;
+
+    /// <summary>창 위아래 여유(반음).</summary>
+    private const double Margin = 1.2;
+
+    /// <summary>현의 좌우 위치(넥 반폭 대비). G, D, A, E 순서.</summary>
+    private static readonly double[] StringOffsets = [-0.72, -0.24, 0.24, 0.72];
+
+    private double windowStart;
+    private double windowEnd;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<NeckMarker> Markers { get; set; } = [];
+
+    [Parameter]
+    public bool ShowNames { get; set; }
+
+    [Parameter]
+    public NeckMarker? Selected { get; set; }
+
+    [Parameter]
+    public EventCallback<NeckMarker> SelectedChanged { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var semitones = Markers.Select(m => (double)m.Semitones).DefaultIfEmpty(0).ToArray();
+        windowStart = Math.Max(0, semitones.Min() - Margin);
+        windowEnd = Math.Min(FingerboardEnd, semitones.Max() + Margin);
+        if (windowStart < 1.5)
+        {
+            windowStart = 0; // 낮은 포지션은 너트부터 보여준다
+        }
+    }
+
+    /// <summary>너트에서 반음 n만큼 떨어진 위치(현 길이 대비 비율).</summary>
+    private static double Fraction(double semitones) => 1 - Math.Pow(2, -semitones / 12);
+
+    private double Y(double semitones) =>
+        (Fraction(semitones) - Fraction(windowStart)) / (Fraction(windowEnd) - Fraction(windowStart)) * NeckHeight;
+
+    /// <summary>넥 반폭(컨테이너 폭 대비 %). 너트 쪽이 좁고 브리지 쪽이 넓다.</summary>
+    private static double HalfWidth(double semitones) => 24 + 20 * Fraction(semitones) / Fraction(FingerboardEnd);
+
+    private static double StringX(EViolinString violinString, double semitones) =>
+        50 + HalfWidth(semitones) * StringOffsets[(int)violinString];
+
+    private string BoardPoints() =>
+        $"{Num(50 - HalfWidth(windowStart))},0 {Num(50 + HalfWidth(windowStart))},0 " +
+        $"{Num(50 + HalfWidth(windowEnd))},{NeckHeight} {Num(50 - HalfWidth(windowEnd))},{NeckHeight}";
+
+    private static string MarkerLabel(NeckMarker marker) =>
+        $"{MusicText.StringName(marker.String)} " +
+        string.Join(", ", marker.Entries.Select(e => $"{MusicText.FingerName(e.Finger)} 손가락 {e.Pitch}"));
+
+    private static string Num(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string Pct(double value) => Num(value) + "%";
+
+    private static string Px(double value) => Num(value) + "px";
+}

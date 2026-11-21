@@ -6,8 +6,6 @@ public class FingerboardTests
 {
     private static Fingering F(EViolinString s, int position, int finger) => new(s, new Position(position), finger);
 
-    private static Fingering Half(EViolinString s, int finger) => new(s, Position.Half, finger);
-
     [Fact]
     public void LowestNote_G3_IsOnlyOpenGString()
     {
@@ -52,45 +50,35 @@ public class FingerboardTests
     }
 
     [Fact]
-    public void Bflat4_IsLowFirstFingerAndHalfPositionFirstFinger()
+    public void Bflat4_IsLowFirstFinger()
     {
-        var fingerings = Fingerboard.GetFingerings(Pitch.Parse("Bb4"));
-
-        Assert.Contains(F(EViolinString.A, 1, 1), fingerings);  // 1포지션 low 1
-        Assert.Contains(Half(EViolinString.A, 1), fingerings);  // 반 포지션 1번
+        Assert.Contains(F(EViolinString.A, 1, 1), Fingerboard.GetFingerings(Pitch.Parse("Bb4")));  // 1포지션 low 1
     }
 
     [Theory]
-    [InlineData("Bb4", 1)]
-    [InlineData("A#4", 1)]
-    [InlineData("B4", 2)]
-    [InlineData("C5", 2)]
-    [InlineData("C#5", 3)]
-    [InlineData("Db5", 3)]
-    [InlineData("D5", 4)]
-    [InlineData("Eb5", 4)]
-    public void HalfPosition_OnAString_UsesSemitoneDistance(string pitch, int expectedFinger)
+    [InlineData("A#4", EViolinString.A)]
+    [InlineData("G#3", EViolinString.G)]
+    [InlineData("D#4", EViolinString.D)]
+    [InlineData("E#5", EViolinString.E)]
+    public void SharpOfOpenString_IsFirstPositionLowFirstFinger(string pitch, EViolinString violinString)
     {
-        var halfFingers = Fingerboard.GetFingerings(Pitch.Parse(pitch))
-            .Where(f => f.String == EViolinString.A && f.Position is { IsHalf: true })
-            .Select(f => f.Finger);
+        var fingerings = Fingerboard.GetFingerings(Pitch.Parse(pitch));
 
-        Assert.Equal([expectedFinger], halfFingers);
+        Assert.Contains(F(violinString, 1, 1), fingerings);
     }
 
     [Fact]
-    public void HalfPosition_CanBeExcluded()
+    public void SharpOfOpenString_RespectsPositionRange()
     {
-        var fingerings = Fingerboard.GetFingerings(Pitch.Parse("Bb4"), Position.First, Position.MaxNumber);
+        var fingerings = Fingerboard.GetFingerings(Pitch.Parse("A#4"), minPosition: 2);
 
-        Assert.DoesNotContain(fingerings, f => f.Position is { IsHalf: true });
-        Assert.Contains(F(EViolinString.A, 1, 1), fingerings);
+        Assert.DoesNotContain(F(EViolinString.A, 1, 1), fingerings);
     }
 
     [Fact]
     public void PositionRange_LimitsResults()
     {
-        var fingerings = Fingerboard.GetFingerings(Pitch.Parse("A4"), Position.First, maxPosition: 3);
+        var fingerings = Fingerboard.GetFingerings(Pitch.Parse("A4"), maxPosition: 3);
 
         Assert.All(fingerings.Where(f => !f.IsOpenString), f => Assert.InRange(f.Position!.Value.Number, 1, 3));
         Assert.DoesNotContain(F(EViolinString.G, 5, 4), fingerings);
@@ -123,15 +111,6 @@ public class FingerboardTests
     }
 
     [Fact]
-    public void GetFingerPitches_HalfPositionOnA()
-    {
-        var fingers = Fingerboard.GetFingerPitches(EViolinString.A, Position.Half);
-
-        Assert.Equal(["A♯4", "B♭4"], fingers[0].Select(p => p.ToString()));
-        Assert.Equal(["C♯5", "D♭5"], fingers[2].Select(p => p.ToString()));
-    }
-
-    [Fact]
     public void GetFingerPitches_AreAllPlayableWithThatFingering()
     {
         foreach (var violinString in EViolinStringExtensions.All)
@@ -146,6 +125,76 @@ public class FingerboardTests
                         Assert.True(
                             Fingerboard.CanPlay(new Fingering(violinString, position, finger), pitch),
                             $"{pitch} on {violinString} pos {position} finger {finger}");
+                    }
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void GetPlacements_FirstPositionOnA_MarksNaturalsAsPrimary()
+    {
+        var placements = Fingerboard.GetPlacements(EViolinString.A, Position.First);
+        var primary = placements.Where(p => p.IsPrimary).Select(p => (p.Finger, p.Semitones, p.Pitch.ToString()));
+
+        Assert.Equal([(1, 2, "B4"), (2, 3, "C5"), (3, 5, "D5"), (4, 7, "E5")], primary);
+        Assert.DoesNotContain(placements, p => !p.Pitch.IsCommonSpelling);
+    }
+
+    [Fact]
+    public void GetPlacements_VariantsCanShareASemitone()
+    {
+        // A현 1포지션: 높은 2번(C♯5)과 낮은 3번(D♭5)은 같은 자리(+4)
+        var atFour = Fingerboard.GetPlacements(EViolinString.A, Position.First).Where(p => p.Semitones == 4).ToList();
+
+        Assert.Equal(2, atFour.Count);
+        Assert.Contains(atFour, p => p.Finger == 2 && p.Pitch.ToString() == "C♯5");
+        Assert.Contains(atFour, p => p.Finger == 3 && p.Pitch.ToString() == "D♭5");
+    }
+
+
+    [Theory]
+    [InlineData(EViolinString.A, "F5")]   // E♯5 → F5
+    [InlineData(EViolinString.E, "C6")]   // B♯5 → C6
+    public void GetPlacements_FillsHighFourthWithCommonSpelling(EViolinString violinString, string expected)
+    {
+        var highFourth = Fingerboard.GetPlacements(violinString, Position.First)
+            .Single(p => p.Finger == 4 && p.Reach == EFingerReach.High);
+
+        Assert.Equal(8, highFourth.Semitones);
+        Assert.Equal(expected, highFourth.Pitch.ToString());
+    }
+
+    [Fact]
+    public void GetPlacements_SkipsRespelledVariantOnOccupiedOrOpenSpot()
+    {
+        // E현 1포지션 낮은 1번(F♭5 = E5)은 개방현 자리라 넣지 않는다.
+        Assert.DoesNotContain(Fingerboard.GetPlacements(EViolinString.E, Position.First), p => p.Semitones == 0);
+
+        // G현 1포지션 높은 2번(B♯3 = C4)은 3번 기본 자리(C4)와 겹쳐 넣지 않는다.
+        var atFive = Fingerboard.GetPlacements(EViolinString.G, Position.First).Where(p => p.Semitones == 5).ToList();
+        Assert.Equal([3], atFive.Select(p => p.Finger));
+    }
+
+    [Fact]
+    public void GetPlacements_EveryFingerHasLowAndHighWhereSpotIsFree()
+    {
+        foreach (var violinString in EViolinStringExtensions.All)
+        {
+            foreach (var position in Position.All)
+            {
+                var placements = Fingerboard.GetPlacements(violinString, position);
+                var occupied = placements.Select(p => p.Semitones).ToHashSet();
+                var naturals = placements.Where(p => p.IsPrimary).ToList();
+                Assert.Equal(Fingerboard.FingerCount, naturals.Count);
+
+                foreach (var natural in naturals)
+                {
+                    // 기본 자리 위아래 반음은 (개방현 자리가 아니면) 반드시 어떤 점이든 있다.
+                    Assert.True(occupied.Contains(natural.Semitones + 1), $"{violinString} pos{position} f{natural.Finger} high");
+                    if (natural.Semitones - 1 > 0)
+                    {
+                        Assert.True(occupied.Contains(natural.Semitones - 1), $"{violinString} pos{position} f{natural.Finger} low");
                     }
                 }
             }

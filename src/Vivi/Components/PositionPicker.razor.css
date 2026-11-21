@@ -1,0 +1,67 @@
+.picker {
+    position: relative;
+}
+
+.scroller {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding: var(--space-1) 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.scroller::-webkit-scrollbar {
+    display: none;
+}
+
+.chip {
+    flex: none;
+    min-width: var(--touch-target);
+}
+
+/* 더 넘길 수 있는 방향에만 화살표가 나타난다 */
+.arrow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target);
+    padding: 0;
+    border: 0;
+    background: var(--color-bg);
+    color: var(--color-accent);
+    cursor: pointer;
+}
+
+.arrow-left {
+    left: 0;
+    box-shadow: 10px 0 10px -6px var(--color-bg);
+}
+
+.arrow-right {
+    right: 0;
+    box-shadow: -10px 0 10px -6px var(--color-bg);
+}
+
+.picker[data-left="true"] .arrow-left,
+.picker[data-right="true"] .arrow-right {
+    display: flex;
+}
+
+.arrow svg {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    border: var(--border-width) solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}

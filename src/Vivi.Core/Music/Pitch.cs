@@ -22,6 +22,13 @@ public readonly record struct Pitch(ENoteLetter Letter, EAccidental Accidental, 
 
     public bool IsEnharmonicWith(Pitch other) => Midi == other.Midi;
 
+    /// <summary>
+    /// 흔히 쓰는 표기인가. E♯, B♯, F♭, C♭처럼 내추럴 음과 같은 소리인 표기는 false다.
+    /// </summary>
+    public bool IsCommonSpelling => (Letter, Accidental) is not
+        ((ENoteLetter.E, EAccidental.Sharp) or (ENoteLetter.B, EAccidental.Sharp) or
+         (ENoteLetter.F, EAccidental.Flat) or (ENoteLetter.C, EAccidental.Flat));
+
     public int CompareTo(Pitch other)
     {
         var byMidi = Midi.CompareTo(other.Midi);
