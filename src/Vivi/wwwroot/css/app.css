@@ -219,39 +219,118 @@ button {
         content: "An error has occurred."
     }
 
-.loading-progress {
-    position: absolute;
+/* 로딩 화면 (시안 D: 통통 튀는 워드마크) — Blazor가 #app을 렌더링하면 사라진다.
+   글자는 Fredoka Bold 글리프를 패스로 넣어 웹폰트 없이 그린다. */
+.vivi-loader {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+}
+
+.vivi-letters {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding-top: 29px; /* 튀어 오를 공간 */
+}
+
+/* 글자와 그림자를 한 묶음으로 두어 그림자가 항상 글자 중심 아래에 온다 */
+.vivi-glyph {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.vivi-letter {
     display: block;
-    width: 8rem;
-    height: 8rem;
-    inset: 20vh 0 auto 0;
-    margin: 0 auto 0 auto;
+    height: 55px;
+    animation: vivi-hop 1.3s cubic-bezier(0.3, 0.7, 0.4, 1) infinite;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: var(--color-border);
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
-
-        .loading-progress circle:last-child {
-            stroke: var(--color-accent);
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+.vivi-shadow {
+    width: 18px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: var(--color-text);
+    opacity: 0.35;
+    animation: vivi-shadow 1.3s cubic-bezier(0.3, 0.7, 0.4, 1) infinite;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+.vivi-shadow.wide { width: 34px; }
+.vivi-shadow:not(.wide) { width: 16px; }
+.vivi-shadow.vivi-d1 { background: var(--string-g); }
+.vivi-shadow.vivi-d2 { background: var(--string-d); }
+.vivi-shadow.vivi-d3 { background: var(--string-a); }
+.vivi-shadow.vivi-d4 { background: var(--string-e); }
+
+.vivi-d1 { animation-delay: 0s; }
+.vivi-d2 { animation-delay: 0.14s; }
+.vivi-d3 { animation-delay: 0.28s; }
+.vivi-d4 { animation-delay: 0.42s; }
+
+.vivi-progress {
+    width: 180px;
+    height: 8px;
+    margin-top: var(--space-6);
+    border-radius: var(--radius-pill);
+    background: var(--color-border);
+    overflow: hidden;
+}
+
+.vivi-progress-bar {
+    width: var(--blazor-load-percentage, 0%);
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    transition: width 0.12s linear;
+}
+
+.vivi-percent {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-family: var(--font-latin);
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.vivi-percent::after {
+    content: var(--blazor-load-percentage-text, "");
+}
+
+@keyframes vivi-hop {
+    0%, 55%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-26px); }
+    40% { transform: translateY(2px); }
+}
+
+@keyframes vivi-shadow {
+    0%, 55%, 100% { transform: scaleX(1); opacity: 0.35; }
+    25% { transform: scaleX(0.55); opacity: 0.15; }
+}
+
+/* 로딩이 끝나 앱이 그려질 때 홈 화면이 부드럽게 나타난다 */
+@keyframes vivi-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+.app-shell {
+    animation: vivi-fade-in 0.45s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vivi-letter,
+    .vivi-shadow,
+    .app-shell {
+        animation: none;
     }
+}
 
 /* 화면에는 숨기고 스크린리더에만 읽히는 텍스트 */
 .sr-only {

@@ -34,11 +34,28 @@
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="vivi-loader" role="status" aria-label="vivi 불러오는 중">
+            <div class="vivi-letters">
+                <div class="vivi-glyph">
+                    <svg class="vivi-letter vivi-d1" viewBox="0 -740 577 760" fill="#8B6CFF" aria-hidden="true"><path d="M288 14Q260 14 240 3Q219 -8 208 -30L31 -367Q9 -410 17 -439Q25 -468 71 -490Q118 -513 145 -506Q172 -499 194 -449L288 -235L382 -449Q405 -501 432 -507Q459 -513 505 -490Q552 -467 559 -438Q566 -408 545 -367L368 -30Q357 -8 337 3Q317 14 288 14Z" /></svg>
+                    <span class="vivi-shadow wide vivi-d1"></span>
+                </div>
+                <div class="vivi-glyph">
+                    <svg class="vivi-letter vivi-d2" viewBox="0 -740 251 760" fill="#2BB5A0" aria-hidden="true"><path d="M125 9Q80 9 61 -4Q42 -18 38 -39Q35 -60 35 -82V-408Q35 -430 39 -450Q43 -471 62 -484Q81 -498 126 -498Q171 -498 190 -484Q208 -471 212 -450Q216 -429 216 -406V-81Q216 -59 212 -38Q208 -17 190 -4Q171 9 125 9ZM125 -547Q80 -547 61 -560Q42 -574 38 -595Q35 -616 35 -638Q35 -661 39 -682Q43 -702 62 -715Q81 -728 126 -728Q171 -728 190 -714Q208 -701 212 -680Q216 -659 216 -637Q216 -615 212 -594Q208 -573 190 -560Q171 -547 125 -547Z" /></svg>
+                    <span class="vivi-shadow vivi-d2"></span>
+                </div>
+                <div class="vivi-glyph">
+                    <svg class="vivi-letter vivi-d3" viewBox="0 -740 577 760" fill="#FF9A3C" aria-hidden="true"><path d="M288 14Q260 14 240 3Q219 -8 208 -30L31 -367Q9 -410 17 -439Q25 -468 71 -490Q118 -513 145 -506Q172 -499 194 -449L288 -235L382 -449Q405 -501 432 -507Q459 -513 505 -490Q552 -467 559 -438Q566 -408 545 -367L368 -30Q357 -8 337 3Q317 14 288 14Z" /></svg>
+                    <span class="vivi-shadow wide vivi-d3"></span>
+                </div>
+                <div class="vivi-glyph">
+                    <svg class="vivi-letter vivi-d4" viewBox="0 -740 251 760" fill="#FF6B9A" aria-hidden="true"><path d="M125 9Q80 9 61 -4Q42 -18 38 -39Q35 -60 35 -82V-408Q35 -430 39 -450Q43 -471 62 -484Q81 -498 126 -498Q171 -498 190 -484Q208 -471 212 -450Q216 -429 216 -406V-81Q216 -59 212 -38Q208 -17 190 -4Q171 9 125 9ZM125 -547Q80 -547 61 -560Q42 -574 38 -595Q35 -616 35 -638Q35 -661 39 -682Q43 -702 62 -715Q81 -728 126 -728Q171 -728 190 -714Q208 -701 212 -680Q216 -659 216 -637Q216 -615 212 -594Q208 -573 190 -560Q171 -547 125 -547Z" /></svg>
+                    <span class="vivi-shadow vivi-d4"></span>
+                </div>
+            </div>
+            <div class="vivi-progress" aria-hidden="true"><div class="vivi-progress-bar"></div></div>
+            <div class="vivi-percent" aria-hidden="true"></div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

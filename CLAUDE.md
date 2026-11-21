@@ -114,4 +114,9 @@ tests/Vivi.Core.Tests/  Vivi.Core 단위 테스트 (xUnit)
 - AudioContext와 마이크는 반드시 사용자 입력(탭·클릭) 이벤트 안에서 시작한다(브라우저 자동재생 정책).
 - 마이크는 HTTPS(또는 localhost)에서만 동작한다. 실제 기기 테스트는 GitHub Pages 배포본으로 한다.
 - 서비스 워커가 자산을 캐시하므로 배포 후 앱을 완전히 닫았다 열어야 새 버전이 반영된다.
+- **로딩 화면:** `index.html`의 `.vivi-loader`(시안 D, 통통 튀는 워드마크)다.
+  - Blazor가 `#app`을 렌더링하면 자동으로 사라진다.
+  - 글자는 Fredoka Bold 글리프를 SVG 패스로 넣어 웹폰트 없이 그린다.
+  - 진행률은 `--blazor-load-percentage`와 `--blazor-load-percentage-text` CSS 변수로만 표시한다(JS 없음).
+  - `prefers-reduced-motion`이면 애니메이션을 멈춘다.
 - `index.html`의 base 경로는 런타임 스크립트로 설정한다. 빌드 후 파일을 수정하면 서비스 워커의 무결성 해시가 깨진다.
